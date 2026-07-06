@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Cluster Raft — Visualizador ao vivo</title>
+  <link rel="stylesheet" href="style.css">
+  <!--RAFT_NODES_PLACEHOLDER-->
+</head>
+<body>
+  <header id="topo">
+    <div class="titulo">
+      <h1>Cluster Raft</h1>
+      <span class="subtitulo">visualização ao vivo</span>
+    </div>
+    <div id="resumo" class="resumo">
+      <span>term: <strong id="resumo-term">—</strong></span>
+      <span>commit: <strong id="resumo-commit">—</strong></span>
+      <span>quórum: <strong id="resumo-quorum">—</strong></span>
+      <span>líder: <strong id="resumo-lider">—</strong></span>
+      <span>heartbeat: <strong id="resumo-heartbeat">—</strong></span>
+    </div>
+    <div id="controles" class="controles"></div>
+  </header>
+
+  <main>
+    <section id="esquerda">
+      <div id="topologia" class="topologia"></div>
+      <div id="particoes" class="particoes"></div>
+    </section>
+
+    <section id="direita">
+      <div id="cards" class="cards"></div>
+      <div id="logs" class="logs"></div>
+      <div id="stream" class="stream"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

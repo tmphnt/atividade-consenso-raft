@@ -1,0 +1,174 @@
+name: atividade-consenso-raft
+
+# Cluster Raft de CINCO nos + dashboard + broker (Nivel 2A: escalado de 3 para 5).
+#
+# RAFT_PEERS lista todos os membros votantes (id=host:port) e tem que ser
+# IDENTICO em todos os nos. So node1 tem RAFT_BOOTSTRAP=true.
+#
+# Com 5 nos o quorum vira 3/5, entao o cluster tolera 2 falhas simultaneas
+# (contra 1 falha no cluster de 3).
+
+services:
+  node1:
+    build:
+      context: ./infra/node
+    container_name: node1
+    hostname: node1
+    cap_add:
+      - NET_ADMIN
+    networks:
+      rede-raft:
+    environment:
+      NODE_ID: node1
+      RAFT_ADDR: 0.0.0.0:7000
+      HTTP_ADDR: 0.0.0.0:9000
+      EVENT_ADDR: 0.0.0.0:8100
+      DATA_DIR: /data
+      RAFT_PEERS: "node1=node1:7000,node2=node2:7000,node3=node3:7000,node4=node4:7000,node5=node5:7000"
+      RAFT_BOOTSTRAP: "true"
+      RAFT_HEARTBEAT_MS: "5000"
+    volumes:
+      - node1-data:/data
+    expose: ["7000", "8100", "9000"]
+    ports:
+      - "9001:9000"   # HTTP API exposed on host for put.sh helper
+
+  node2:
+    build:
+      context: ./infra/node
+    container_name: node2
+    hostname: node2
+    cap_add:
+      - NET_ADMIN
+    networks:
+      rede-raft:
+    environment:
+      NODE_ID: node2
+      RAFT_ADDR: 0.0.0.0:7000
+      HTTP_ADDR: 0.0.0.0:9000
+      EVENT_ADDR: 0.0.0.0:8100
+      DATA_DIR: /data
+      RAFT_PEERS: "node1=node1:7000,node2=node2:7000,node3=node3:7000,node4=node4:7000,node5=node5:7000"
+      RAFT_BOOTSTRAP: "false"
+      RAFT_HEARTBEAT_MS: "5000"
+    volumes:
+      - node2-data:/data
+    expose: ["7000", "8100", "9000"]
+    ports:
+      - "9002:9000"
+
+  node3:
+    build:
+      context: ./infra/node
+    container_name: node3
+    hostname: node3
+    cap_add:
+      - NET_ADMIN
+    networks:
+      rede-raft:
+    environment:
+      NODE_ID: node3
+      RAFT_ADDR: 0.0.0.0:7000
+      HTTP_ADDR: 0.0.0.0:9000
+      EVENT_ADDR: 0.0.0.0:8100
+      DATA_DIR: /data
+      RAFT_PEERS: "node1=node1:7000,node2=node2:7000,node3=node3:7000,node4=node4:7000,node5=node5:7000"
+      RAFT_BOOTSTRAP: "false"
+      RAFT_HEARTBEAT_MS: "5000"
+    volumes:
+      - node3-data:/data
+    expose: ["7000", "8100", "9000"]
+    ports:
+      - "9003:9000"
+
+  node4:
+    build:
+      context: ./infra/node
+    container_name: node4
+    hostname: node4
+    cap_add:
+      - NET_ADMIN
+    networks:
+      rede-raft:
+    environment:
+      NODE_ID: node4
+      RAFT_ADDR: 0.0.0.0:7000
+      HTTP_ADDR: 0.0.0.0:9000
+      EVENT_ADDR: 0.0.0.0:8100
+      DATA_DIR: /data
+      RAFT_PEERS: "node1=node1:7000,node2=node2:7000,node3=node3:7000,node4=node4:7000,node5=node5:7000"
+      RAFT_BOOTSTRAP: "false"
+      RAFT_HEARTBEAT_MS: "5000"
+    volumes:
+      - node4-data:/data
+    expose: ["7000", "8100", "9000"]
+    ports:
+      - "9004:9000"
+
+  node5:
+    build:
+      context: ./infra/node
+    container_name: node5
+    hostname: node5
+    cap_add:
+      - NET_ADMIN
+    networks:
+      rede-raft:
+    environment:
+      NODE_ID: node5
+      RAFT_ADDR: 0.0.0.0:7000
+      HTTP_ADDR: 0.0.0.0:9000
+      EVENT_ADDR: 0.0.0.0:8100
+      DATA_DIR: /data
+      RAFT_PEERS: "node1=node1:7000,node2=node2:7000,node3=node3:7000,node4=node4:7000,node5=node5:7000"
+      RAFT_BOOTSTRAP: "false"
+      RAFT_HEARTBEAT_MS: "5000"
+    volumes:
+      - node5-data:/data
+    expose: ["7000", "8100", "9000"]
+    ports:
+      - "9005:9000"
+
+  dashboard:
+    build:
+      context: ./infra/dashboard
+    container_name: raft-dashboard
+    hostname: dashboard
+    networks:
+      rede-raft:
+    environment:
+      RAFT_NODES: "node1,node2,node3,node4,node5"
+    ports:
+      - "8080:80"
+    depends_on:
+      - node1
+      - node2
+      - node3
+      - node4
+      - node5
+
+  broker:
+    build:
+      context: ./infra/broker
+    container_name: raft-broker
+    hostname: broker
+    networks:
+      rede-raft:
+    environment:
+      RAFT_NODES: "node1,node2,node3,node4,node5"
+      RAFT_NETWORK: "atividade-consenso-raft_rede-raft"
+      BROKER_PORT: "9100"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    expose: ["9100"]
+
+networks:
+  rede-raft:
+    driver: bridge
+
+volumes:
+  node1-data:
+  node2-data:
+  node3-data:
+  node4-data:
+  node5-data:
