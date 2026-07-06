@@ -4,12 +4,10 @@
 **Dupla:** Tom Pereira Hunt / Pedro Henrique Gimenez
 **Data:** 05/07/2026
 
-> _Nota sobre as capturas de tela:_ no nosso ambiente não deu pra automatizar o
-> print do dashboard (o Chrome headless trava na conexão SSE e o `screencapture`
-> precisava de permissão de gravação de tela). Então, no lugar de cada screenshot,
-> colamos o **estado real capturado via `/status` de cada nó** — que é exatamente o
-> que o dashboard desenha em cima. O dashboard fica vivo em `localhost:8080` com
-> `docker compose up --build` pra conferência visual.
+> _Nota:_ os screenshots do dashboard estão na pasta `screenshots/` e também
+> colamos, junto de cada um, o **estado real capturado via `/status`** de cada nó
+> pra deixar os números explícitos. O dashboard fica vivo em `localhost:8080` com
+> `docker compose up --build`.
 
 ---
 
@@ -36,6 +34,10 @@
 > pra cada seguidor (pacotes verdes saindo do verde pros cinzas). Servem pra
 > avisar "ainda estou vivo e sou o líder", zerando o *election timeout* dos
 > seguidores pra eles não começarem uma eleição à toa.
+
+**Screenshot — cluster estável logo após a eleição (dashboard):**
+
+![Eleição estabilizada](./screenshots/eleicao-inicial-5nos.png)
 
 **Estado real logo após a eleição inicial estabilizar (via `/status`):**
 
@@ -194,6 +196,14 @@ node3(leader)   store={"chave_a":"valor_a"} commit_idx=6
 
 ### 1.5 Partição majoritária e reconciliação de log
 
+**Screenshot — ANTES da cura:** líder velho isolado como candidato (amarelo, term menor) e novo líder verde em outro term; no painel de logs o índice mais novo aparece `—` (ausente) no nó isolado.
+
+![Partição majoritária](./screenshots/particao-majoritaria.png)
+
+**Screenshot — DEPOIS da cura:** o nó que estava isolado voltou a follower e seu log convergiu (índice antes ausente agora `comprometida` em todos).
+
+![Reconciliação após a cura](./screenshots/reconciliacao-pos-cura.png)
+
 **Estado real ANTES da cura (líder velho `node2` isolado, log com entradas não comprometidas):**
 
 ```
@@ -252,6 +262,10 @@ padrão dos nós, atualizamos `RAFT_PEERS` nos cinco nós pra listar os cinco en
 volumes `node4-data` e `node5-data`. Subimos com `docker compose down -v && docker
 compose up --build` (o `down -v` é crucial pra limpar a config de 3 nós persistida).
 
+**Screenshot — cabeçalho do dashboard com `quórum: 3/5` (cluster de 5 nós):**
+
+![Cluster de 5 nós, quórum 3/5](./screenshots/eleicao-inicial-5nos.png)
+
 **Estado real do cluster de 5 nós (quórum = 3/5):**
 
 ```
@@ -278,6 +292,10 @@ node4 role=candidate/follower term=5->6   (terms sobem, ninguem vira lider)
 node5 role=candidate/follower term=5->6
 put com so 2 vivos -> {"error":"not leader","leader_id":"","node":"node5"}
 ```
+
+**Screenshot — cluster paralisado após 3 falhas:** três nós vermelhos (parados), os dois vivos ficam como candidato/follower amarelo com o `term` subindo (RequestVote no stream) e nenhum vira verde.
+
+![Quórum esgotado com 3 falhas](./screenshots/quorum-esgotado.png)
 
 1. Com 5 nós, quantas falhas simultâneas tolera? Compare com 3.
 
